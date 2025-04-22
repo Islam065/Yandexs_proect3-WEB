@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест скорости реакции</title>
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --success: #4cc9f0;
+            --danger: #f72585;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --border-radius: 12px;
+            --box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 2rem;
+            color: var(--dark);
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 2rem auto;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 2.5rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        h1 {
+            color: var(--primary);
+            font-weight: 800;
+            font-size: 2.2rem;
+            margin-bottom: 1rem;
+            text-align: center;
+            background: linear-gradient(to right, #4361ee, #3f37c9);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        #reaction-box {
+            width: 220px;
+            height: 220px;
+            margin: 2rem auto;
+            background: white;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            font-weight: 600;
+            transition: var(--transition);
+            box-shadow: var(--box-shadow);
+            border: 2px solid #e2e8f0;
+        }
+
+        #reaction-box.ready {
+            background: var(--success);
+            color: white;
+            transform: scale(1.03);
+            animation: pulse 1.5s infinite;
+        }
+
+        #reaction-box.too-soon {
+            background: var(--danger);
+            color: white;
+            animation: shake 0.5s;
+        }
+
+        #start-btn {
+            padding: 1rem 2rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 1rem auto;
+            display: block;
+            transition: var(--transition);
+            box-shadow: 0 4px 14px rgba(67, 97, 238, 0.3);
+        }
+
+        .stats-container {
+            background: rgba(241, 245, 249, 0.6);
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            margin-top: 2rem;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 0.8rem 0;
+            font-size: 1.1rem;
+        }
+
+        .progress-bar {
+            height: 12px;
+            background: #e2e8f0;
+            border-radius: 6px;
+            margin: 1.5rem 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4361ee, #3f37c9);
+            transition: width 0.6s ease;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(76, 201, 240, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(76, 201, 240, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(76, 201, 240, 0); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            75% { transform: translateX(8px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Тест скорости реакции</h1>
+
+        <button id="start-btn">Начать тест</button>
+
+        <div id="reaction-box" style="display: none;">Ждите зелёного цвета...</div>
+
+        <div id="stats-container" class="stats-container" style="display: none;">
+            <div class="stat-row">
+                <span>Ваше время:</span>
+                <span id="your-time" style="font-weight: bold;">0 мс</span>
+            </div>
+            <div class="stat-row">
+                <span>Вы быстрее:</span>
+                <span id="percentile" style="font-weight: bold;">0</span>% игроков
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+            </div>
+            <div class="stat-row">
+                <span>Всего попыток:</span>
+                <span id="total-players" style="font-weight: bold;">0</span>
+            </div>
+        </div>
+
+        <a href="/records" style="display: inline-block; margin-top: 2rem;
+         padding: 0.8rem 1.8rem; background: var(--primary); color: white;
+          text-decoration: none; border-radius: 50px; font-weight: 600;">Таблица рекордов</a>
+    </div>
+
+    <script>
+        const box = document.getElementById('reaction-box');
+        const startBtn = document.getElementById('start-btn');
+        const statsContainer = document.getElementById('stats-container');
+        const yourTimeElement = document.getElementById('your-time');
+        const percentileElement = document.getElementById('percentile');
+        const totalPlayersElement = document.getElementById('total-players');
+        const progressFill = document.getElementById('progress-fill');
+
+        let startTime;
+        let timeoutId;
+
+        function startTest() {
+            startBtn.style.display = 'none';
+            box.style.display = 'flex';
+            box.textContent = 'Приготовьтесь...';
+            statsContainer.style.display = 'none';
+
+            fetch('/get_delay')
+                .then(response => response.json())
+                .then(data => {
+                    timeoutId = setTimeout(() => {
+                        box.className = 'ready';
+                        box.textContent = 'ЖМИ СЕЙЧАС!';
+                        startTime = performance.now();
+                    }, data.delay * 1000);
+                });
+        }
+
+        box.addEventListener('click', () => {
+            if (box.className === 'ready') {
+                const reactionTime = Math.round(performance.now() - startTime);
+                box.className = '';
+                box.textContent = 'Загрузка...';
+
+                fetch('/save_result', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        time: reactionTime,
+                        username: 'Игрок'
+                    }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        yourTimeElement.textContent = data.stats.your_time + ' мс';
+                        percentileElement.textContent = data.stats.percentile;
+                        totalPlayersElement.textContent = data.stats.total_players;
+                        progressFill.style.width = data.stats.percentile + '%';
+
+                        statsContainer.style.display = 'block';
+                        box.textContent = 'Готово!';
+
+                        setTimeout(() => {
+                            box.style.display = 'none';
+                            startBtn.style.display = 'block';
+                            startBtn.textContent = 'Попробовать снова';
+                        }, 3000);
+                    }
+                });
+            } else if (box.style.display !== 'none') {
+                box.className = 'too-soon';
+                box.textContent = 'Слишком рано!';
+                clearTimeout(timeoutId);
+                setTimeout(() => {
+                    box.textContent = 'Приготовьтесь...';
+                    box.className = '';
+                }, 1000);
+            }
+        });
+
+        startBtn.addEventListener('click', startTest);
+    </script>
+</body>
+</html>
