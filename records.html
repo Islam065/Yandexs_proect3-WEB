@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Таблица рекордов</title>
+    <style>
+        /* Основные стили страницы */
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f5f7fa; margin: 0; padding: 2rem; }
+        .container { max-width: 800px; margin: 0 auto;
+            background: white; padding: 2rem; border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
+        h1 { color: #4361ee; text-align: center; margin-bottom: 2rem; }
+
+        /* Стили таблицы */
+        table { width: 100%; border-collapse: collapse; margin: 2rem 0; }
+        th { background: #4361ee; color: white; padding: 1rem; text-align: left; }
+        td { padding: 1rem; border-bottom: 1px solid #eee; }
+
+        /* Стили медалей */
+        .medal { display: inline-block; width: 24px; height: 24px;
+            border-radius: 50%; text-align: center;
+            line-height: 24px; color: white;
+            font-weight: bold; margin-right: 8px; }
+        .gold { background: #ffd700; }
+        .silver { background: #c0c0c0; }
+        .bronze { background: #cd7f32; }
+
+        /* Стиль кнопки */
+        a { display: inline-block; margin-top: 2rem;
+            padding: 0.8rem 1.8rem; background: #4361ee; color: white;
+            text-decoration: none; border-radius: 50px; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Лучшие игроки</h1>
+
+        <!-- Таблица рекордов -->
+        <table>
+            <thead>
+                <tr>
+                    <th>Место</th>
+                    <th>Имя</th>
+                    <th>Время</th>
+                    <th>Дата</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in records %}
+                <tr>
+                    <td>
+                        {% if loop.index == 1 %}
+                            <span class="medal gold">1</span>
+                        {% elif loop.index == 2 %}
+                            <span class="medal silver">2</span>
+                        {% elif loop.index == 3 %}
+                            <span class="medal bronze">3</span>
+                        {% else %}
+                            {{ loop.index }}
+                        {% endif %}
+                    </td>
+                    <td>{{ record.username }}</td>
+                    <td>{{ record.reaction_time }} мс</td>
+                    <td>{{ record.date }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" style="text-align: center;">Пока нет записей</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <a href="/">Назад к тесту</a>
+    </div>
+</body>
+</html>
