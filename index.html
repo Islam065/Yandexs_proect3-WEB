@@ -216,72 +216,87 @@
         });
 
         function startTest() {
-            startBtn.style.display = 'none';
-            box.style.display = 'flex';
-            box.textContent = 'Приготовьтесь...';
-            statsContainer.style.display = 'none';
+    startBtn.style.display = 'none';
+    box.style.display = 'flex';
+    box.textContent = 'Приготовьтесь...';
+    statsContainer.style.display = 'none';
 
-            fetch('/get_delay')
-                .then(response => response.json())
-                .then(data => {
-                    timeoutId = setTimeout(() => {
-                        box.className = 'ready';
-                        box.textContent = 'ЖМИ СЕЙЧАС!';
-                        startTime = performance.now();
-                    }, data.delay * 1000);
-                });
-        }
+    fetch('/get_delay')
+        .then(response => response.json())
+        .then(data => {
+            timeoutId = setTimeout(() => {
+                box.className = 'ready';
+                box.textContent = 'ЖМИ СЕЙЧАС!';
+                startTime = performance.now();
+            }, data.delay * 1000);
+        });
+}
 
-        box.addEventListener('click', () => {
-            if (box.className === 'ready') {
-                const reactionTime = Math.round(performance.now() - startTime);
-                const username = playerNameInput.value.trim() || 'Игрок';
+box.addEventListener('click', () => {
+    if (box.className === 'ready') {
+        const reactionTime = Math.round(performance.now() - startTime);
+        const username = document.getElementById('player-name').value.trim() || 'Игрок';
 
-                // Сохраняем имя для будущих попыток
-                localStorage.setItem('playerName', username);
+        box.className = '';
+        box.textContent = 'Идёт подсчёт...';
 
-                box.className = '';
-                box.textContent = 'Загрузка...';
+        // Сохраняем имя для будущих попыток
+        localStorage.setItem('playerName', username);
 
-                fetch('/save_result', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        time: reactionTime,
-                        username: username
-                    }),
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        yourTimeElement.textContent = data.stats.your_time + ' мс';
-                        percentileElement.textContent = data.stats.percentile;
-                        totalPlayersElement.textContent = data.stats.total_players;
-                        progressFill.style.width = data.stats.percentile + '%';
+        // Настройка timeout для запроса
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-                        statsContainer.style.display = 'block';
-                        box.textContent = 'Готово!';
+        fetch('/save_result', {
+            method: 'POST',
+            signal: controller.signal,
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ time: reactionTime, username: username })
+        })
+        .then(response => {
+            clearTimeout(timeoutId);
+            if (!response.ok) throw new Error('Server error');
+            return response.json();
+        })
+        .then(data => {
+            if (data.status === 'success') {
+                // Быстрое обновление интерфейса
+                yourTimeElement.textContent = data.stats.your_time + ' мс';
+                percentileElement.textContent = data.stats.percentile;
+                totalPlayersElement.textContent = data.stats.total_players;
+                progressFill.style.width = data.stats.percentile + '%';
 
-                        setTimeout(() => {
-                            box.style.display = 'none';
-                            startBtn.style.display = 'block';
-                            startBtn.textContent = 'Попробовать снова';
-                        }, 3000);
-                    }
-                });
-            } else if (box.style.display !== 'none') {
-                box.className = 'too-soon';
-                box.textContent = 'Слишком рано!';
-                clearTimeout(timeoutId);
+                statsContainer.style.display = 'block';
+                box.textContent = 'Готово!';
+
                 setTimeout(() => {
-                    box.textContent = 'Приготовьтесь...';
-                    box.className = '';
-                }, 1000);
+                    box.style.display = 'none';
+                    startBtn.style.display = 'block';
+                    startBtn.textContent = 'Попробовать снова';
+                }, 2000);
             }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            box.textContent = error.name === 'AbortError' ? 'Сервер не отвечает' : 'Ошибка';
+            setTimeout(() => {
+                box.style.display = 'none';
+                startBtn.style.display = 'block';
+            }, 2000);
         });
 
+    } else if (box.style.display !== 'none') {
+        box.className = 'too-soon';
+        box.textContent = 'Слишком рано!';
+        clearTimeout(timeoutId);
+
+        setTimeout(() => {
+            box.textContent = 'Приготовьтесь...';
+            box.className = '';
+            startTest();
+        }, 1000);
+    }
+});
         startBtn.addEventListener('click', startTest);
     </script>
 </body>
