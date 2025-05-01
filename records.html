@@ -5,44 +5,92 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Таблица рекордов</title>
     <style>
-        /* Основные стили страницы */
-        body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f5f7fa; margin: 0; padding: 2rem; }
-        .container { max-width: 800px; margin: 0 auto;
-            background: white; padding: 2rem; border-radius: 12px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
-        h1 { color: #4361ee; text-align: center; margin-bottom: 2rem; }
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --light: #f8f9fa;
+            --border-radius: 12px;
+            --box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+        }
 
-        /* Стили таблицы */
-        table { width: 100%; border-collapse: collapse; margin: 2rem 0; }
-        th { background: #4361ee; color: white; padding: 1rem; text-align: left; }
-        td { padding: 1rem; border-bottom: 1px solid #eee; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 2rem;
+            color: #212529;
+        }
 
-        /* Стили медалей */
-        .medal { display: inline-block; width: 24px; height: 24px;
-            border-radius: 50%; text-align: center;
-            line-height: 24px; color: white;
-            font-weight: bold; margin-right: 8px; }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 2rem;
+        }
+
+        h1 {
+            color: var(--primary);
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        th {
+            background-color: var(--light);
+            font-weight: 600;
+        }
+
+        .medal {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 24px;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
         .gold { background: #ffd700; }
         .silver { background: #c0c0c0; }
         .bronze { background: #cd7f32; }
 
-        /* Стиль кнопки */
-        a { display: inline-block; margin-top: 2rem;
-            padding: 0.8rem 1.8rem; background: #4361ee; color: white;
-            text-decoration: none; border-radius: 50px; font-weight: 600; }
+        .back-link {
+            display: inline-block;
+            margin-top: 1rem;
+            padding: 0.8rem 1.8rem;
+            background: var(--primary);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Лучшие игроки</h1>
+        <h1>Таблица рекордов</h1>
 
-        <!-- Таблица рекордов -->
         <table>
             <thead>
                 <tr>
                     <th>Место</th>
                     <th>Имя</th>
-                    <th>Время</th>
+                    <th>Время (мс)</th>
                     <th>Дата</th>
                 </tr>
             </thead>
@@ -61,8 +109,8 @@
                         {% endif %}
                     </td>
                     <td>{{ record.username }}</td>
-                    <td>{{ record.reaction_time }} мс</td>
-                    <td>{{ record.date }}</td>
+                    <td>{{ record.time }}</td>
+                    <td>{{ record.date.strftime('%Y-%m-%d %H:%M') }}</td>
                 </tr>
                 {% else %}
                 <tr>
@@ -72,7 +120,7 @@
             </tbody>
         </table>
 
-        <a href="/">Назад к тесту</a>
+        <a href="/" class="back-link">Вернуться к тесту</a>
     </div>
 </body>
 </html>
