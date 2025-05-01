@@ -12,9 +12,8 @@ db = SQLAlchemy(app)
 class Record(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), nullable=False, default='Игрок')
-    time = db.Column(db.Integer, nullable=False)
+    time = db.Column(db.Integer, nullable=False, index=True)  # Добавлен индекс
     date = db.Column(db.DateTime, default=datetime.utcnow)
-
 
 @app.route('/')
 def index():
@@ -52,8 +51,10 @@ def save_result():
 
 @app.route('/records')
 def records():
-    records = Record.query.order_by(Record.time.asc()).all()
+    # Получаем 30 лучших результатов (сортировка по времени по возрастанию)
+    records = Record.query.order_by(Record.time.asc()).limit(30).all()
     return render_template('records.html', records=records)
+
 
 
 if __name__ == '__main__':
