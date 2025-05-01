@@ -48,6 +48,29 @@
             -webkit-text-fill-color: transparent;
         }
 
+        .input-group {
+            margin: 1rem auto;
+            max-width: 300px;
+            text-align: center;
+        }
+
+        #player-name {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 50px;
+            font-size: 1rem;
+            text-align: center;
+            margin-top: 0.5rem;
+            transition: var(--transition);
+        }
+
+        #player-name:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+
         #reaction-box {
             width: 220px;
             height: 220px;
@@ -138,6 +161,12 @@
     <div class="container">
         <h1>Тест скорости реакции</h1>
 
+        <!-- Добавленное поле для ввода имени -->
+        <div class="input-group">
+            <label for="player-name">Ваше имя:</label>
+            <input type="text" id="player-name" placeholder="Введите ваше имя" maxlength="20">
+        </div>
+
         <button id="start-btn">Начать тест</button>
 
         <div id="reaction-box" style="display: none;">Ждите зелёного цвета...</div>
@@ -173,9 +202,18 @@
         const percentileElement = document.getElementById('percentile');
         const totalPlayersElement = document.getElementById('total-players');
         const progressFill = document.getElementById('progress-fill');
+        const playerNameInput = document.getElementById('player-name');
 
         let startTime;
         let timeoutId;
+
+        // Восстанавливаем сохраненное имя при загрузке
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedName = localStorage.getItem('playerName');
+            if (savedName) {
+                playerNameInput.value = savedName;
+            }
+        });
 
         function startTest() {
             startBtn.style.display = 'none';
@@ -197,6 +235,11 @@
         box.addEventListener('click', () => {
             if (box.className === 'ready') {
                 const reactionTime = Math.round(performance.now() - startTime);
+                const username = playerNameInput.value.trim() || 'Игрок';
+
+                // Сохраняем имя для будущих попыток
+                localStorage.setItem('playerName', username);
+
                 box.className = '';
                 box.textContent = 'Загрузка...';
 
@@ -207,7 +250,7 @@
                     },
                     body: JSON.stringify({
                         time: reactionTime,
-                        username: 'Игрок'
+                        username: username
                     }),
                 })
                 .then(response => response.json())
